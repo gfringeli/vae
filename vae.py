@@ -253,7 +253,13 @@ class FactorVAE():
     X_train, X_val = train_test_split(X, train_size=0.75, test_size=0.25, random_state=38, shuffle=True)
     
     X_train_ds = tf.data.Dataset.from_tensor_slices(X_train)
-    X_train_ds = X_train_ds.shuffle(buffer_size=1024).batch(batch_size)
+
+    '''
+    2 times batch size, as the batch will later be divided into two equally sized batches,
+    where one batch will be used for train the VAE and the other to train the Discriminator.
+    This will allow FactorVAE's VAE part to have similar learning behaviour as BetaVAE for the same batch size.
+    '''
+    X_train_ds = X_train_ds.shuffle(buffer_size=1024).batch(2*batch_size)
     
     vae_optimizer = Adam(lr=1e-4, beta_1=0.9, beta_2=0.999)
     discriminator_optimizer = Adam(lr=1e-4, beta_1=0.5, beta_2=0.9)
@@ -267,7 +273,7 @@ class FactorVAE():
       
       bar = Progbar(X_train.shape[0], stateful_metrics=["val_loss"], verbose=1)
 
-      last_step = int(np.ceil(X_train.shape[0]/batch_size)) - 1
+      last_step = int(np.ceil(X_train.shape[0]/(2*batch_size))) - 1
       for step, x_batch in enumerate(X_train_ds):
         fvae_l, rec_l, disc_l = self._train_step(x_batch, vae_optimizer, discriminator_optimizer)
         
