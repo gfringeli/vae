@@ -239,7 +239,7 @@ class BetaVAE():
 class FactorVAE():
   
   def __init__(self, latent_dims=10, gamma=35.0):
-    super(FactorVAE, self).__init__(name='factor_vae')
+    super(FactorVAE, self).__init__()
     
     self.gamma = gamma
     self.latent_dims = latent_dims
